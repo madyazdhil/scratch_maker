@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scratch Bulk Account Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --scratch-orange: #FFAB1A;
+            --scratch-blue: #4D97FF;
+            --scratch-purple: #9966FF;
+            --scratch-green: #0FBD8C;
+            --scratch-red: #FF6680;
+            --bg-color: #F0F4F8;
+            --card-bg: #FFFFFF;
+            --text-color: #575E75;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: var(--scratch-blue);
+            font-size: 2.5rem;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #8590A6;
+            margin-top: 10px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            border: 2px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .btn {
+            background-color: var(--scratch-blue);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            width: 100%;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background-color: #3A85E6;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-green {
+            background-color: var(--scratch-green);
+        }
+
+        .btn-green:hover {
+            background-color: #0DA57A;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #E0E6ED;
+        }
+
+        .results-table th {
+            color: var(--scratch-purple);
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background-color: #E0E6ED;
+            color: var(--text-color);
+        }
+
+        .badge.verified {
+            background-color: rgba(15, 189, 140, 0.1);
+            color: var(--scratch-green);
+        }
+
+        .badge.pending {
+            background-color: rgba(255, 171, 26, 0.1);
+            color: var(--scratch-orange);
+        }
+
+        .section-title {
+            margin-top: 0;
+            font-size: 1.5rem;
+            color: var(--scratch-purple);
+            margin-bottom: 20px;
+        }
+
+        .log-container {
+            margin-top: 20px;
+            background: #333;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-error {
+            color: var(--scratch-red);
+        }
+
+        .log-success {
+            color: var(--scratch-green);
+        }
+
+        .refresh-btn {
+            background: none;
+            border: none;
+            color: var(--scratch-blue);
+            cursor: pointer;
+            font-weight: 600;
+            float: right;
+        }
+
+        .refresh-btn:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Scratch Account Manager</h1>
+            <p>Deploy bots to create accounts and verify them automatically.</p>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">Actions</h2>
+            <p>Trigger the Python bot on GitHub to start creating accounts based on the configuration in the script.</p>
+            <button class="btn" onclick="triggerExecutor()" id="triggerBtn">🚀 Trigger Account Creation
+                (GitHub)</button>
+
+            <p style="margin-top: 20px;">Check for verification emails and update status.</p>
+            <button class="btn btn-green" onclick="verifyEmails()" id="verifyBtn">✅ Verify Emails & Update
+                Status</button>
+
+            <div id="logContainer" class="log-container"></div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 class="section-title" style="margin-bottom: 0;">Created Accounts</h2>
+                <button class="refresh-btn" onclick="loadAccounts()">🔄 Refresh List</button>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Date Created</th>
+                            <th>Username</th>
+                            <th>Password</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accountsBody">
+                        <tr>
+                            <td colspan="4">Loading data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load accounts on startup
+        window.onload = loadAccounts;
+
+        function loadAccounts() {
+            const tbody = document.getElementById('accountsBody');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Loading data from Spreadsheet...</td></tr>';
+
+            google.script.run
+                .withSuccessHandler(function (data) {
+                    tbody.innerHTML = '';
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No accounts found.</td></tr>';
+                        return;
+                    }
+
+                    // Sort by date descending (newest first)
+                    data.sort((a, b) => new Date(b[0]) - new Date(a[0]));
+
+                    data.forEach(row => {
+                        const date = new Date(row[0]).toLocaleString();
+                        const username = row[1];
+                        const password = row[2];
+                        const status = row[3];
+
+                        let badgeClass = 'pending';
+                        let statusText = 'Not Verified';
+
+                        if (status === 'email_verified') {
+                            badgeClass = 'verified';
+                            statusText = 'Verified';
+                        }
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${date}</td>
+                            <td><strong>${username}</strong></td>
+                            <td><code>${password}</code></td>
+                            <td><span class="badge ${badgeClass}">${statusText}</span></td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .withFailureHandler(function (error) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="color: red;">Error loading data: ${error.message}</td></tr>`;
+                })
+                .getAccounts();
+        }
+
+        function triggerExecutor() {
+            const btn = document.getElementById('triggerBtn');
+            const log = document.getElementById('logContainer');
+
+            if (!confirm("Are you sure you want to trigger the GitHub Action to create accounts?")) return;
+
+            btn.disabled = true;
+            btn.innerText = 'Triggering...';
+            log.style.display = 'block';
+            log.innerHTML += '<div>> Sending request to GitHub...</div>';
+
+            google.script.run
+                .withSuccessHandler(function (result) {
+                    btn.disabled = false;
+                    btn.innerText = '🚀 Trigger Account Creation (GitHub)';
+
+                    if (result.success) {
+                        log.innerHTML += `<div class="log-success">> ${result.message}</div>`;
+                    } else {
+                        log.innerHTML += `<div class="log-error">> ${result.message}</div>`;
+                    }
+                })
+                .withFailureHandler(function (error) {
+                    btn.disabled = false;
+                    btn.innerText = '🚀 Trigger Account Creation (GitHub)';
+                    log.innerHTML += `<div class="log-error">> SYSTEM ERROR: ${error.message}</div>`;
+                })
+                .triggerExecutor();
+        }
+
+        function verifyEmails() {
+            const btn = document.getElementById('verifyBtn');
+            const log = document.getElementById('logContainer');
+
+            btn.disabled = true;
+            btn.innerText = 'Verifying...';
+            log.style.display = 'block';
+            log.innerHTML += '<div>> Checking Gmail for verification links...</div>';
+
+            google.script.run
+                .withSuccessHandler(function (result) {
+                    btn.disabled = false;
+                    btn.innerText = '✅ Verify Emails & Update Status';
+
+                    if (result.logs && result.logs.length > 0) {
+                        result.logs.forEach(l => log.innerHTML += `<div>> ${l}</div>`);
+                    }
+
+                    if (result.success) {
+                        log.innerHTML += `<div class="log-success">> Verification process finished.</div>`;
+                        loadAccounts(); // Refresh table
+                    } else {
+                        log.innerHTML += `<div class="log-error">> Process finished with errors.</div>`;
+                    }
+
+                    log.scrollTop = log.scrollHeight;
+                })
+                .withFailureHandler(function (error) {
+                    btn.disabled = false;
+                    btn.innerText = '✅ Verify Emails & Update Status';
+                    log.innerHTML += `<div class="log-error">> SYSTEM ERROR: ${error.message}</div>`;
+                })
+                .processVerification();
+        }
+    </script>
+</body>
+
+</html>

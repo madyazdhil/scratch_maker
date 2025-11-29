@@ -1,0 +1,29 @@
+name: Run Scratch Account Executor
+
+on:
+  repository_dispatch:
+    types: [trigger_executor]
+  workflow_dispatch:
+
+jobs:
+  run-executor:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install selenium webdriver-manager requests
+
+    - name: Run Executor Script
+      env:
+        APPS_SCRIPT_URL: ${{ secrets.APPS_SCRIPT_URL }}
+      run: python scratch_maker/executor.py
